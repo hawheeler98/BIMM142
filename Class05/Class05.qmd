@@ -1,0 +1,107 @@
+---
+title: "Class 5: Data Visualization with ggplot"
+author: "Hailey (A13312713)"
+format: pdf
+---
+
+## Using GGPLOT
+Before I use any package functions I have to load them up with a 'library()' call, like so: 
+
+```{r}
+#install.packages("dplyr")
+library(dplyr)
+library(ggplot2)
+ggplot(cars)
+```
+
+```{r}
+cars
+```
+
+There is always the "base R" graphics system, i.e. `plot()`
+
+```{r}
+plot(cars)
+```
+
+To use ggplot I needd to spell out at least 3 things: 
+- data (the stuff I want to plot as a data.frame)
+- aesthetics "aes() values": how the data map to the plot 
+- geometrys "geoms": how I want things drawn 
+
+```{r}
+ggplot(cars) + 
+  aes(x=speed, y=dist) + 
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE )
+```
+
+```{r}
+ggplot(cars) + 
+  aes(x=speed, y=dist) + 
+  geom_point() +
+  labs(title="Speed and Stopping Distances of Cars", x="Speed(MPH)", y="Stopping Distance (ft)", subtitle = "Your informative subtitle text here", caption="Dataset:'cars'") +
+  geom_smooth(method="lm", se=FALSE ) +
+  theme_bw()
+```
+
+```{r}
+url <- "https://bioboot.github.io/bimm143_S20/class-material/up_down_expression.txt"
+genes <- read.delim(url)
+head(genes)
+```
+```{r}
+nrow(genes)
+colnames(genes)
+table(genes$State)
+round((table(genes$State)/nrow(genes)) * 100, 2)
+```
+
+```{r}
+p <- ggplot(genes) +
+  aes(x=Condition1, y=Condition2, col=State) +
+  geom_point() +
+  labs(title="Gene Expression Changes Upon Drug Treatment", x="Control (no drug)", y="Drug Treatment")
+
+p + scale_colour_manual(values=c("blue", "gray", "red"))
+```
+
+```{r}
+url <- "https://raw.githubusercontent.com/jennybc/gapminder/master/inst/extdata/gapminder.tsv"
+gapminder <- read.delim(url)
+gapminder_2007 <- gapminder %>% filter(year==2007)
+ggplot(gapminder_2007) +
+  aes(x=gdpPercap, y=lifeExp, color=continent,size=pop) +
+  geom_point(alpha=0.5)
+```
+
+```{r}
+ggplot(gapminder_2007) +
+  geom_point(aes(x=gdpPercap, y=lifeExp, size=pop), alpha=0.5) +
+  scale_size_area(max_size = 10)
+```
+
+```{r}
+gapminder_1957 <- gapminder %>% filter(year==1957)
+ggplot(gapminder_1957) + 
+  aes(x=gdpPercap, y=lifeExp, color=continent, size=pop) +
+  geom_point(alpha=0.7) +
+  scale_size_area(max_size = 10)
+```
+
+```{r}
+gapminder_1957 <- gapminder %>% filter(year==1957 | year==2007)
+ggplot(gapminder_1957) + 
+  aes(x=gdpPercap, y=lifeExp, color=continent, size=pop) +
+  geom_point(alpha=0.7) +
+  scale_size_area(max_size = 10) +
+  facet_wrap(~year)
+```
+
+```{r}
+ggplot(gapminder_1957, aes(gdpPercap,lifeExp)) +
+  geom_point(alpha=0.7) +
+  scale_size_area(max_size = 10) +
+  facet_wrap(~year)
+```
+

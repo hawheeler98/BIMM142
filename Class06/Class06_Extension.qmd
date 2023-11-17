@@ -1,0 +1,70 @@
+---
+title: "Class06_Extension"
+author: "Hailey Wheeler (A13312713)"
+format: pdf
+---
+
+```{r}
+# Can you improve this analysis code?
+library(bio3d)
+
+# Inserting PDB structure file for a specific protein "" - generating vector 
+s1 <- read.pdb("4AKE")  # kinase with drug
+s2 <- read.pdb("1AKE")  # kinase no drug
+s3 <- read.pdb("1E4Y")  # kinase with drug
+
+# Create data.frame based on selected file: chain identifier, and atom type = elety
+s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s2.chainA <- trim.pdb(s2, chain="A", elety="CA")
+s3.chainA <- trim.pdb(s3, chain="A", elety="CA")
+
+# select character matrix containing all atomic coordinate data - create row per atom and a column per record type 
+s1.b <- s1.chainA$atom$b
+s2.b <- s2.chainA$atom$b
+s3.b <- s3.chainA$atom$b
+
+# Plot data with x = l and y = Bfactor 
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor")
+plotb3(s2.b, sse=s2.chainA, typ="l", ylab="Bfactor")
+plotb3(s3.b, sse=s3.chainA, typ="l", ylab="Bfactor")
+
+# hierarchical cluster analysis on the dissimilarities between the chain associated with the kinase 
+hc <- hclust( dist( rbind(s1.b, s2.b, s3.b) ) )
+plot(hc)
+
+lbio3d()
+help(bio3d)
+
+```
+
+
+```{r}
+## Install Bio3D package on Quarto
+library(bio3d)
+
+## Call your function(x) 
+protein <- function(x){
+  
+  # call protein file and establish as "x"
+  x <- read.pdb(x)
+  
+  # create a new PDB object based on pdb selection of backbone atoms (selecting for Chain identifier, A, and and atom type)
+  x.chainA <- trim.pdb(x, chain = "A", elety = "CA")
+  
+  # select character matrix containing all atomic coordinate data (create row per atom and a column per record type)
+  # Plot residue temperature factor by secondary structure element of Chain A, using x = l and y = Bfactor 
+  plot.bio3d(x.chainA$atom$b, sse=x.chainA, type="l", ylab ="Bfactor")
+}
+
+
+# sse = secondary structure element
+# Bfactor = residue temperature factors 
+# trim.pdb() = create a new PDB object based on our selection of backbone atoms 
+
+
+# Call created function 'protein' and apply that to a pdb object to analyze B-factor vs. Residue. 
+protein("4AKE")
+protein("1AKE")
+protein("1E4Y")
+```
+

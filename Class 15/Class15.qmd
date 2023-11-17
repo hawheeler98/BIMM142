@@ -1,0 +1,16 @@
+---
+title: "GitHub: R Studio"
+author: "Hailey Wheeler (13312713)"
+format: html
+---
+
+```{r}
+library(usethis)
+create_github_token()
+```
+
+```{r}
+gitcreds::gitcreds_set()
+```
+
+

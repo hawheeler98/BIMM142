@@ -1,0 +1,141 @@
+---
+title: "Class 11: AlphaFold2 Analysis"
+author: "Hailey Wheeler (A13312713)"
+format: pdf
+---
+
+```{r}
+results_dir <- "hivprdimer_23119/" 
+```
+
+```{r}
+pdb_files <- list.files(path=results_dir,
+                        pattern="*.pdb",
+                        full.names = TRUE)
+
+# Print our PDB file names
+basename(pdb_files)
+```
+
+```{r}
+library(bio3d)
+
+# Read all data from Models 
+#  and superpose/fit coords
+pdbs <- pdbaln(pdb_files, fit=TRUE, exefile="msa")
+```
+## RMSD matrix 
+
+```{r}
+rd <- rmsd(pdbs, fit=T)
+range(rd)
+```
+
+```{r}
+library(pheatmap)
+
+colnames(rd) <- paste0("m",1:5)
+rownames(rd) <- paste0("m",1:5)
+pheatmap(rd)
+```
+Lets view these in *Mol. We want the fitted coords. 
+
+
+```{r}
+xyz <- pdbfit(pdbs, outpath = "fitted")
+```
+
+A full atom based fitting or superposition did not work very well because we have multiple chains that are in different conformations 
+
+I want to superposition on the most invariatn part (the rigid "core")
+
+```{r}
+core <- core.find(pdbs)
+```
+
+```{r}
+core.inds <- core
+```
+
+```{r}
+xyz <- pdbfit(pdbs, inds=core.inds, outpath="corefit_fitted")
+```
+
+To evaluate how good multi-chain or multi-domain are needed to look at the PAE scores (predicted aligned error) 
+
+There are output as JSON format files. Let's find all their file names:
+
+```{r}
+pae_files <- list.files(results_dir, pattern = "0.json", full.names = T)
+pae_files
+```
+
+```{r}
+library(jsonlite)
+
+pae1 <- read_json(pae_files[1], simplifyVector = TRUE)
+attributes(pae1)
+```
+
+```{r}
+pae5 <- read_json(pae_files[5], simplifyVector = TRUE)
+pae1$max_pae
+pae5$max_pae
+```
+
+```{r}
+plot.dmat(pae5$pae)
+```
+
+```{r}
+plot.dmat(pae1$pae, 
+          xlab="Residue Position (i)",
+          ylab="Residue Position (j)",
+          grid.col = "black",
+          zlim=c(0,30))
+```
+
+```{r}
+plot.dmat(pae5$pae, 
+          xlab="Residue Position (i)",
+          ylab="Residue Position (j)",
+          grid.col = "black",
+          zlim=c(0,30))
+```
+
+```{r}
+aln_file <- list.files(path=results_dir,
+                       pattern=".a3m$",
+                        full.names = TRUE)
+aln_file
+```
+
+
+```{r}
+aln <- read.fasta(aln_file[1], to.upper = TRUE)
+```
+
+```{r}
+dim(aln$ali)
+```
+
+```{r}
+#sim <- conserv(aln)
+#plotb3(sim[1:99], sse=trim.pdb(pdb, chain="A"),
+       #ylab="Conservation Score")
+```
+
+```{r}
+con <- consensus(aln, cutoff = 0.9)
+con$seq
+```
+
+```{r}
+#m1.pdb <- read.pdb(pdb_files[1])
+#occ <- vec2resno(c(sim[1:99], sim[1:99]), m1.pdb$atom$resno)
+#write.pdb(m1.pdb, o=occ, file="m1_conserv.pdb")
+```
+
+## Main Points
+Run Alpha Fold on google compute infrastructure 
+Read results into R
