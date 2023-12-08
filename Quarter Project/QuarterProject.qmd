@@ -1,0 +1,76 @@
+---
+title: "Find a Gene: Quarter Assessment"
+author: "Hailey Wheeler (A13312713)"
+format: html
+---
+# Create a Heat Map 
+```{r}
+
+library(bio3d)
+library(pheatmap)
+library(jsonlite)
+library(dplyr)
+
+```
+
+# Import fasta sequence
+```{r}
+MSA <- read.fasta("QProject.fst")
+```
+
+# Heatmap 
+```{r}
+matrix <- seqidentity(MSA)
+heatmap(matrix, main = "Sequence Identity Heatmap of YBX1")
+```
+
+# Make a consensus sequence to search for similar structures in PBD
+
+```{r}
+consensus <- consensus(MSA)
+consensus_seq <- consensus$seq
+consensus_seq
+```
+# Trim off all the gaps 
+
+```{r}
+consensus_seq_trimmed <- consensus_seq[165:475]
+consensus_seq_trimmed
+```
+# Use consensus_seq_trimmed 
+# Search PDB 
+
+```{r}
+data <- consensus_seq_trimmed
+hits_pdbs <- blast.pdb(data, database ="pdb", time.out=60)
+hits_pdbs_table <- hits_pdbs$hit.tbl
+```
+
+# Generate table and get it all as vectors 
+```{r}
+ID <- as.vector(hits_pdbs_table$subjectids[1:15])
+e_value <- as.vector(hits_pdbs_table$evalue[1:15])
+percent_identity <- as.vector(hits_pdbs_table$identity[1:15])
+```
+
+# Annotating only top indiciated IDs
+```{r}
+annotate_pdbs <- pdb.annotate(hits_pdbs_table$subjectids)
+```
+
+```{r}
+technique <- as.vector(annotate_pdbs$experimentalTechnique[1:15])
+resolution <- as.vector(annotate_pdbs$resolution[1:15])
+source <- as.vector(annotate_pdbs$source[1:15])
+```
+
+
+
+```{r}
+TopHits_pdbs_table <- data_frame(ID, e_value, percent_identity, technique, resolution, source)
+```
+
+
+
+
+
